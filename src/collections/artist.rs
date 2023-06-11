@@ -12,7 +12,7 @@ use crate::{Album, Client, Error, Media, Result, Song};
 #[allow(missing_docs)]
 #[derive(Debug, Clone)]
 pub struct Artist {
-    pub id: usize,
+    pub id: String,
     pub name: String,
     cover_id: Option<String>,
     albums: Vec<Album>,
@@ -36,14 +36,14 @@ pub struct ArtistInfo {
 
 impl Artist {
     #[allow(missing_docs)]
-    pub async fn get(client: &Client, id: usize) -> Result<Artist> {
+    pub async fn get(client: &Client, id: &str) -> Result<Artist> {
         self::get_artist(client, id).await
     }
 
     /// Returns a list of albums released by the artist.
     pub async fn albums(&self, client: &Client) -> Result<Vec<Album>> {
         if self.albums.len() != self.album_count {
-            Ok(self::get_artist(client, self.id).await?.albums)
+            Ok(self::get_artist(client, &self.id).await?.albums)
         } else {
             Ok(self.albums.clone())
         }
@@ -52,7 +52,7 @@ impl Artist {
     /// Queries last.fm for more information about the artist.
     pub async fn info(&self, client: &Client) -> Result<ArtistInfo> {
         let res = client
-            .get("getArtistInfo", Query::with("id", self.id))
+            .get("getArtistInfo", Query::with("id", self.id.as_ref()))
             .await?;
         Ok(serde_json::from_value(res)?)
     }
@@ -73,7 +73,7 @@ impl Artist {
         B: Into<Option<bool>>,
         U: Into<Option<usize>>,
     {
-        let args = Query::with("id", self.id)
+        let args = Query::with("id", self.id.as_ref())
             .arg("count", count.into())
             .arg("includeNotPresent", include_not_present.into())
             .build();
@@ -86,7 +86,7 @@ impl Artist {
     where
         U: Into<Option<usize>>,
     {
-        let args = Query::with("id", self.id)
+        let args = Query::with("id", self.id.as_ref())
             .arg("count", count.into())
             .build();
 
@@ -192,7 +192,7 @@ impl<'de> Deserialize<'de> for ArtistInfo {
 }
 
 /// Fetches an artist from the Subsonic server.
-async fn get_artist(client: &Client, id: usize) -> Result<Artist> {
+async fn get_artist(client: &Client, id: &str) -> Result<Artist> {
     let res = client.get("getArtist", Query::with("id", id)).await?;
     Ok(serde_json::from_value::<Artist>(res)?)
 }
@@ -206,7 +206,7 @@ mod tests {
     fn parse_artist() {
         let parsed = serde_json::from_value::<Artist>(raw()).unwrap();
 
-        assert_eq!(parsed.id, 1);
+        assert_eq!(parsed.id, "1");
         assert_eq!(parsed.name, String::from("Misteur Valaire"));
         assert_eq!(parsed.album_count, 1);
     }
@@ -216,7 +216,7 @@ mod tests {
         let parsed = serde_json::from_value::<Artist>(raw()).unwrap();
 
         assert_eq!(parsed.albums.len(), parsed.album_count);
-        assert_eq!(parsed.albums[0].id, 1);
+        assert_eq!(parsed.albums[0].id, "1");
         assert_eq!(parsed.albums[0].name, String::from("Bellevue"));
         assert_eq!(parsed.albums[0].song_count, 9);
     }
@@ -227,7 +227,7 @@ mod tests {
         let parsed = serde_json::from_value::<Artist>(raw()).unwrap();
         let albums = tokio_test::block_on(async { parsed.albums(&srv).await.unwrap() });
 
-        assert_eq!(albums[0].id, 1);
+        assert_eq!(albums[0].id, "1");
         assert_eq!(albums[0].name, String::from("Bellevue"));
         assert_eq!(albums[0].song_count, 9);
     }
