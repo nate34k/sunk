@@ -51,7 +51,7 @@ const SALT_SIZE: usize = 36; // Minimum 6 characters.
 pub struct Client {
     url: Url,
     auth: SubsonicAuth,
-    pub reqclient: ReqwestClient,
+    reqclient: ReqwestClient,
     /// Version that the `Client` supports.
     pub ver: Version,
     /// Version that the `Client` is targeting; currently only has an effect on
