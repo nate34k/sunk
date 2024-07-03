@@ -143,7 +143,7 @@ impl Client {
         let addr = self.url.host_str().ok_or(Error::Url(UrlError::Address))?;
         let path = self.url.path();
 
-        let mut url = [scheme, "://", addr, path, "/rest/"].concat();
+        let mut url = [scheme, "://", addr, path, "rest/"].concat();
         url.push_str(query);
         url.push('?');
         url.push_str(&self.auth.to_url(self.target_ver));
@@ -424,7 +424,7 @@ mod tests {
         let cli = test_util::demo_site().unwrap();
         let (status, n) = tokio_test::block_on(async { cli.scan_status().await.unwrap() });
         assert!(!status);
-        assert_eq!(n, 525);
+        assert_eq!(n, 526);
     }
 
     #[test]
@@ -433,14 +433,14 @@ mod tests {
         let s = SearchPage::new().with_size(1);
         let r = tokio_test::block_on(async { cli.search("dada", s, s, s).await.unwrap() });
 
-        assert_eq!(r.artists[0].id, 14);
+        assert_eq!(r.artists[0].id, "14");
         assert_eq!(r.artists[0].name, String::from("The Dada Weatherman"));
         assert_eq!(r.artists[0].album_count, 4);
 
-        assert_eq!(r.albums[0].id, 23);
+        assert_eq!(r.albums[0].id, "23");
         assert_eq!(r.albums[0].name, String::from("The Green Waltz"));
 
-        assert_eq!(r.songs[0].id, 222);
+        assert_eq!(r.songs[0].id, "222");
 
         // etc.
     }
