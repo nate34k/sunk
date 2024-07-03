@@ -145,7 +145,7 @@ pub struct NowPlaying {
     pub minutes_ago: usize,
     /// The ID of the player.
     pub player_id: usize,
-    id: String,
+    id: usize,
     is_video: bool,
 }
 
@@ -162,7 +162,7 @@ impl NowPlaying {
         if self.is_video {
             Err(Error::Other("Now Playing info is not a song"))
         } else {
-            Song::get(client, &self.id).await
+            Song::get(client, self.id as u64).await
         }
     }
 
@@ -178,7 +178,7 @@ impl NowPlaying {
         if !self.is_video {
             Err(Error::Other("Now Playing info is not a video"))
         } else {
-            Video::get(client, &self.id).await
+            Video::get(client, self.id).await
         }
     }
 

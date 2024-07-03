@@ -15,18 +15,18 @@ use crate::{Client, Error, HlsPlaylist, Media, Result, Streamable};
 #[readonly::make]
 pub struct Song {
     /// Unique identifier for the song.
-    pub id: String,
+    pub id: u64,
     /// Title of the song. Prefers the song's ID3 tags, but will fall back to
     /// the file name.
     pub title: String,
     /// Album the song belongs to. Reads from the song's ID3 tags.
     pub album: Option<String>,
     /// The ID of the released album.
-    pub album_id: Option<String>,
+    pub album_id: Option<u64>,
     /// Credited artist for the song. Reads from the song's ID3 tags.
     pub artist: Option<String>,
     /// The ID of the releasing artist.
-    pub artist_id: Option<String>,
+    pub artist_id: Option<u64>,
     /// Position of the song in the album.
     pub track: Option<u64>,
     /// Year the song was released.
@@ -64,7 +64,7 @@ impl Song {
     ///
     /// Aside from other errors the `Client` may cause, the server will return
     /// an error if there is no song matching the provided ID.
-    pub async fn get(client: &Client, id: &str) -> Result<Song> {
+    pub async fn get(client: &Client, id: u64) -> Result<Song> {
         let res = client.get("getSong", Query::with("id", id)).await?;
         Ok(serde_json::from_value(res)?)
     }
@@ -78,7 +78,7 @@ impl Song {
     where
         U: Into<Option<usize>>,
     {
-        let args = Query::with("id", self.id.as_ref())
+        let args = Query::with("id", self.id)
             .arg("count", count.into())
             .build();
 
@@ -152,7 +152,7 @@ impl Song {
     /// empty array) to disable adaptive streaming, or given a single value to
     /// force streaming at that bit rate.
     pub async fn hls(&self, client: &Client, bit_rates: &[u64]) -> Result<HlsPlaylist> {
-        let args = Query::with("id", self.id.as_ref())
+        let args = Query::with("id", self.id)
             .arg_list("bitrate", bit_rates)
             .build();
 
@@ -164,25 +164,25 @@ impl Song {
 #[async_trait::async_trait]
 impl Streamable for Song {
     async fn stream(&self, client: &Client) -> Result<Vec<u8>> {
-        let mut q = Query::with("id", self.id.as_ref());
+        let mut q = Query::with("id", self.id);
         q.arg("maxBitRate", self.stream_br);
         client.get_bytes("stream", q).await
     }
 
     fn stream_url(&self, client: &Client) -> Result<String> {
-        let mut q = Query::with("id", self.id.as_ref());
+        let mut q = Query::with("id", self.id);
         q.arg("maxBitRate", self.stream_br);
         client.build_url("stream", q)
     }
 
     async fn download(&self, client: &Client) -> Result<Vec<u8>> {
         client
-            .get_bytes("download", Query::with("id", self.id.as_ref()))
+            .get_bytes("download", Query::with("id", self.id))
             .await
     }
 
     fn download_url(&self, client: &Client) -> Result<String> {
-        client.build_url("download", Query::with("id", self.id.as_ref()))
+        client.build_url("download", Query::with("id", self.id))
     }
 
     fn encoding(&self) -> &str {
@@ -292,12 +292,12 @@ impl<'de> Deserialize<'de> for Song {
         let raw = _Song::deserialize(de)?;
 
         Ok(Song {
-            id: raw.id,
+            id: raw.id.parse().unwrap(),
             title: raw.title,
             album: raw.album,
-            album_id: raw.album_id,
+            album_id: raw.album_id.map(|i| i.parse().unwrap()),
             artist: raw.artist,
-            artist_id: raw.artist_id,
+            artist_id: raw.artist_id.map(|i| i.parse().unwrap()),
             cover_id: raw.cover_art,
             track: raw.track,
             year: raw.year,
@@ -463,7 +463,7 @@ mod tests {
     fn parse_song() {
         let parsed = serde_json::from_value::<Song>(raw()).unwrap();
 
-        assert_eq!(parsed.id, "27");
+        assert_eq!(parsed.id, 27);
         assert_eq!(parsed.title, String::from("Bellevue Avenue"));
         assert_eq!(parsed.track, Some(1));
     }

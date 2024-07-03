@@ -12,7 +12,7 @@ use crate::{Client, Error, Media, Result, Streamable};
 #[derive(Debug)]
 #[readonly::make]
 pub struct Video {
-    pub id: String,
+    pub id: usize,
     pub parent: usize,
     pub is_dir: bool,
     pub title: String,
@@ -41,7 +41,7 @@ pub struct Video {
 
 impl Video {
     #[allow(missing_docs)]
-    pub async fn get(client: &Client, id: &str) -> Result<Video> {
+    pub async fn get(client: &Client, id: usize) -> Result<Video> {
         Video::list(client)
             .await?
             .into_iter()
@@ -60,7 +60,7 @@ impl Video {
     where
         S: Into<Option<&'a str>>,
     {
-        let args = Query::with("id", self.id.as_ref())
+        let args = Query::with("id", self.id)
             .arg("format", format.into())
             .build();
         let res = client.get("getVideoInfo", args).await?;
@@ -72,7 +72,7 @@ impl Video {
     where
         S: Into<Option<&'a str>>,
     {
-        let args = Query::with("id", self.id.as_ref())
+        let args = Query::with("id", self.id)
             .arg("format", format.into())
             .build();
         let res = client.get_raw("getCaptions", args).await?;
@@ -97,7 +97,7 @@ impl Video {
 #[async_trait::async_trait]
 impl Streamable for Video {
     async fn stream(&self, client: &Client) -> Result<Vec<u8>> {
-        let args = Query::with("id", self.id.as_ref())
+        let args = Query::with("id", self.id)
             .arg("maxBitRate", self.stream_br)
             .arg("size", self.stream_size.map(|(w, h)| format!("{w}x{h}")))
             .arg("timeOffset", self.stream_offset)
@@ -106,7 +106,7 @@ impl Streamable for Video {
     }
 
     fn stream_url(&self, client: &Client) -> Result<String> {
-        let args = Query::with("id", self.id.as_ref())
+        let args = Query::with("id", self.id)
             .arg("maxBitRate", self.stream_br)
             .arg("size", self.stream_size.map(|(w, h)| format!("{w}x{h}")))
             .arg("timeOffset", self.stream_offset)
@@ -116,12 +116,12 @@ impl Streamable for Video {
 
     async fn download(&self, client: &Client) -> Result<Vec<u8>> {
         client
-            .get_bytes("download", Query::with("id", self.id.as_ref()))
+            .get_bytes("download", Query::with("id", self.id))
             .await
     }
 
     fn download_url(&self, client: &Client) -> Result<String> {
-        client.build_url("download", Query::with("id", self.id.as_ref()))
+        client.build_url("download", Query::with("id", self.id))
     }
 
     fn encoding(&self) -> &str {
@@ -353,7 +353,7 @@ mod tests {
     fn parse_video() {
         let parsed = serde_json::from_value::<Video>(raw()).unwrap();
 
-        assert_eq!(parsed.id, "460");
+        assert_eq!(parsed.id, 460);
         assert_eq!(parsed.title, "Big Buck Bunny");
         assert!(!parsed.has_cover_art());
     }

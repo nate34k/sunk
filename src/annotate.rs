@@ -44,13 +44,13 @@ pub trait Annotatable {
 #[async_trait::async_trait]
 impl Annotatable for Artist {
     async fn star(&self, client: &Client) -> Result<()> {
-        client.get("star", Query::with("artistId", self.id.as_ref())).await?;
+        client.get("star", Query::with("artistId", self.id)).await?;
         Ok(())
     }
 
     async fn unstar(&self, client: &Client) -> Result<()> {
         client
-            .get("unstar", Query::with("artistId", self.id.as_ref()))
+            .get("unstar", Query::with("artistId", self.id))
             .await?;
         Ok(())
     }
@@ -60,7 +60,7 @@ impl Annotatable for Artist {
             return Err(Error::Other("rating must be between 0 and 5 inclusive"));
         }
 
-        let args = Query::with("id", self.id.as_ref()).arg("rating", rating).build();
+        let args = Query::with("id", self.id).arg("rating", rating).build();
         client.get("setRating", args).await?;
         Ok(())
     }
@@ -70,7 +70,7 @@ impl Annotatable for Artist {
         B: Into<Option<bool>> + Send,
         T: Into<Option<&'a str>> + Send,
     {
-        let args = Query::with("id", self.id.as_ref())
+        let args = Query::with("id", self.id)
             .arg("time", time.into())
             .arg("submission", now_playing.into().map(|b| !b))
             .build();
@@ -82,13 +82,13 @@ impl Annotatable for Artist {
 #[async_trait::async_trait]
 impl Annotatable for Album {
     async fn star(&self, client: &Client) -> Result<()> {
-        client.get("star", Query::with("albumId", self.id.as_ref())).await?;
+        client.get("star", Query::with("albumId", self.id)).await?;
         Ok(())
     }
 
     async fn unstar(&self, client: &Client) -> Result<()> {
         client
-            .get("unstar", Query::with("albumId", self.id.as_ref()))
+            .get("unstar", Query::with("albumId", self.id))
             .await?;
         Ok(())
     }
@@ -98,7 +98,7 @@ impl Annotatable for Album {
             return Err(Error::Other("rating must be between 0 and 5 inclusive"));
         }
 
-        let args = Query::with("id", self.id.as_ref()).arg("rating", rating).build();
+        let args = Query::with("id", self.id).arg("rating", rating).build();
         client.get("setRating", args).await?;
         Ok(())
     }
@@ -108,7 +108,7 @@ impl Annotatable for Album {
         B: Into<Option<bool>> + Send,
         T: Into<Option<&'a str>> + Send,
     {
-        let args = Query::with("id", self.id.as_ref())
+        let args = Query::with("id", self.id)
             .arg("time", time.into())
             .arg("submission", now_playing.into().map(|b| !b))
             .build();
@@ -120,12 +120,12 @@ impl Annotatable for Album {
 #[async_trait::async_trait]
 impl Annotatable for Song {
     async fn star(&self, client: &Client) -> Result<()> {
-        client.get("star", Query::with("id", self.id.as_ref())).await?;
+        client.get("star", Query::with("id", self.id)).await?;
         Ok(())
     }
 
     async fn unstar(&self, client: &Client) -> Result<()> {
-        client.get("unstar", Query::with("id", self.id.as_ref())).await?;
+        client.get("unstar", Query::with("id", self.id)).await?;
         Ok(())
     }
 
@@ -134,7 +134,7 @@ impl Annotatable for Song {
             return Err(Error::Other("rating must be between 0 and 5 inclusive"));
         }
 
-        let args = Query::with("id", self.id.as_ref()).arg("rating", rating).build();
+        let args = Query::with("id", self.id).arg("rating", rating).build();
         client.get("setRating", args).await?;
         Ok(())
     }
@@ -144,7 +144,7 @@ impl Annotatable for Song {
         B: Into<Option<bool>> + Send,
         T: Into<Option<&'a str>> + Send,
     {
-        let args = Query::with("id", self.id.as_ref())
+        let args = Query::with("id", self.id)
             .arg("time", time.into())
             .arg("submission", now_playing.into().map(|b| !b))
             .build();

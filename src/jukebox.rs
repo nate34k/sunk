@@ -80,7 +80,7 @@ impl<'a> Jukebox<'a> {
         &self,
         action: &str,
         index: U,
-        ids: &[&str],
+        ids: &[usize],
     ) -> Result<JukeboxStatus>
     where
         U: Into<Option<usize>>,
@@ -134,7 +134,7 @@ impl<'a> Jukebox<'a> {
 
     /// Adds the song to the jukebox's playlist.
     pub async fn add(&self, song: &Song) -> Result<JukeboxStatus> {
-        self.send_action_with("add", None, &[&song.id])
+        self.send_action_with("add", None, &[song.id as usize])
             .await
     }
 
@@ -144,7 +144,7 @@ impl<'a> Jukebox<'a> {
     ///
     /// The method will return an error if a song matching the provided ID
     /// cannot be found.
-    pub async fn add_id(&self, id: &str) -> Result<JukeboxStatus> {
+    pub async fn add_id(&self, id: usize) -> Result<JukeboxStatus> {
         self.send_action_with("add", None, &[id]).await
     }
 
@@ -153,7 +153,7 @@ impl<'a> Jukebox<'a> {
         self.send_action_with(
             "add",
             None,
-            &songs.iter().map(|s| s.id.as_ref()).collect::<Vec<_>>(),
+            &songs.iter().map(|s| s.id as usize).collect::<Vec<_>>(),
         )
         .await
     }
@@ -164,7 +164,7 @@ impl<'a> Jukebox<'a> {
     ///
     /// The method will return an error if at least one ID cannot be matched to
     /// a song.
-    pub async fn add_all_ids(&self, ids: &[&str]) -> Result<JukeboxStatus> {
+    pub async fn add_all_ids(&self, ids: &[usize]) -> Result<JukeboxStatus> {
         self.send_action_with("add", None, ids).await
     }
 
